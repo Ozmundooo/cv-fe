@@ -133,7 +133,6 @@ function getGalleryImages() {
       width: 1600,
       height: 1200,
     },
-    className: layouts[index % layouts.length],
   }));
 }
 
@@ -154,7 +153,7 @@ export default function Gallery() {
       <Navbar active="Gallery" />
       <section className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 lg:py-20">
         <h1 className="font-title">Gallery</h1>
-        <div className="mt-10 grid auto-rows-[112px] grid-cols-2 gap-2 sm:auto-rows-[130px] md:grid-cols-6 md:auto-rows-[155px] lg:auto-rows-[165px]">
+        <div className="mt-10 grid  grid-cols-2 gap-2  md:grid-cols-4 ">
           {galleryImages.map(({ image, className }, index) => (
             <figure
               key={index}
@@ -170,7 +169,7 @@ export default function Gallery() {
                   src={image}
                   alt={`Crescent Village community moment ${index + 1}`}
                   className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
-                  sizes="(max-width: 767px) 50vw, 16.667vw"
+                  sizes=""
                 />
               </button>
             </figure>
