@@ -7,7 +7,7 @@ import Lightbox from "yet-another-react-lightbox";
 import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
-import { getGalleryImages, getPage } from "@/lib/sanity";
+import { getGalleryImages, getPage, urlFor } from "@/lib/sanity";
 
 export default function Gallery({ page, images }) {
   const [selectedImage, setSelectedImage] = useState(-1);
@@ -23,7 +23,7 @@ export default function Gallery({ page, images }) {
       <section className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 lg:py-20">
         <h1 className="font-title">{page?.title || "Gallery"}</h1>
         {images.length > 0 ? (
-          <div className="mt-10 grid  grid-cols-2 gap-2  md:grid-cols-4 ">
+          <div className="mt-4 lg:mt-10 grid  grid-cols-2 gap-2  md:grid-cols-4 ">
             {images.map((image, index) => (
               <figure
                 key={image._key ?? index}
@@ -36,7 +36,7 @@ export default function Gallery({ page, images }) {
                   aria-label={`Open community moment ${index + 1}`}
                 >
                   <img
-                    src={image.imageUrl}
+                    src={urlFor(image.imageUrl).format("webp").url()}
                     alt={`Crescent Village community moment ${index + 1}`}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"

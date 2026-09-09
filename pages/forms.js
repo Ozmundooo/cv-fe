@@ -109,16 +109,16 @@ export default function Forms({ page, forms }) {
   return (
     <main>
       <Navbar active="Forms" />
-      <section className="mx-auto my-20 max-w-[1400px] px-5 md:px-10">
+      <section className="mx-auto my-8 lg:my-20 max-w-[1400px] px-5 md:px-10">
         <h1 className="font-title max-w-[591px]">
           {page?.title || "Forms, Applications & Important Documents"}
         </h1>
         {page?.description && (
-          <p className="mt-10 max-w-[622px] font-subtext text-[15px] leading-5 tracking-[-0.04em] text-[#1D1E22]/80">
+          <p className="mt-4 lg:mt-10 max-w-[622px] font-subtext text-[15px] leading-5 tracking-[-0.04em] text-[#1D1E22]/80">
             {page.description}
           </p>
         )}
-        <div className="mt-20 grid gap-[10px] lg:grid-cols-[215px_1fr]">
+        <div className="mt-8 lg:mt-20 grid gap-[10px] lg:grid-cols-[215px_1fr]">
           {filterGroups.length > 0 && (
             <aside className="h-fit rounded-md bg-white p-4">
               <h2 className="font-subtext text-[24px] font-bold leading-[31px] tracking-[-0.04em] text-[#1D1E22]">
@@ -126,7 +126,7 @@ export default function Forms({ page, forms }) {
               </h2>
               <div className="mt-6 space-y-6">
                 {filterGroups.map((group) => (
-                  <details key={group.id} open>
+                  <details key={group.id}>
                     <summary className="flex cursor-pointer list-none items-center justify-between font-subtext text-[15px] font-medium leading-5 tracking-[-0.04em] text-[#1D1E22] [&::-webkit-details-marker]:hidden">
                       {group.label}
                       <ChevronDown size={16} />
