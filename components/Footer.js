@@ -58,7 +58,10 @@ export default function Footer() {
             <ul className={`mt-4 ${listClassName}`}>
               {pageLinks.map((label) => (
                 <li key={label}>
-                  <a href={label.toLowerCase()} className={linkClassName}>
+                  <a
+                    href={label === "Home" ? "/" : `/${label.toLowerCase()}`}
+                    className={linkClassName}
+                  >
                     {label}
                   </a>
                 </li>
@@ -73,7 +76,10 @@ export default function Footer() {
             <ul className={`mt-4 ${listClassName}`}>
               {helpLinks.map((label) => (
                 <li key={label}>
-                  <a href={label.toLowerCase()} className={linkClassName}>
+                  <a
+                    href={label === "Home" ? "/" : `/${label.toLowerCase()}`}
+                    className={linkClassName}
+                  >
                     {label}
                   </a>
                 </li>

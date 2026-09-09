@@ -20,7 +20,7 @@ export default function Gallery({ page, images }) {
   return (
     <main className="bg-cream">
       <Navbar active="Gallery" />
-      <section className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 lg:py-20">
+      <section className="mx-auto max-w-[1400px] px-5 py-8 md:px-10 lg:py-20">
         <h1 className="font-title">{page?.title || "Gallery"}</h1>
         {images.length > 0 ? (
           <div className="mt-4 lg:mt-10 grid  grid-cols-2 gap-2  md:grid-cols-4 ">

@@ -44,7 +44,7 @@ export default function About({ page, news }) {
   return (
     <main>
       <Navbar active="" />
-      <section className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 lg:py-20">
+      <section className="mx-auto max-w-[1400px] px-5 py-8 md:px-10 lg:py-20">
         <h1 className="font-about-hero-title text-center">
           {page?.title ||
             "It's about creating a community where people feel supported, connected, and empowered to thrive together."}
@@ -59,7 +59,7 @@ export default function About({ page, news }) {
         )}
       </section>
       {(page?.missionVisionValues ?? []).length > 0 && (
-        <section className="mx-auto max-w-[1400px] my-20 px-5 md:px-10">
+        <section className="mx-auto max-w-[1400px] my-8 lg:my-20 px-5 md:px-10">
           <div className="space-y-12">
             {page.missionVisionValues.map(({ title, description }, index) => (
               <div
@@ -79,7 +79,7 @@ export default function About({ page, news }) {
         </section>
       )}
       {impactItems.length > 0 && (
-        <section className="mx-auto my-20 max-w-[1400px] px-5 md:px-10">
+        <section className="mx-auto my-8 lg:my-20 max-w-[1400px] px-5 md:px-10">
           <div className="flex gap-2">
             <div className="h-3 w-3 shrink-0 rounded-full bg-black"></div>
             <h2 className="font-about-mvv-titles">Our Impact</h2>
@@ -90,12 +90,12 @@ export default function About({ page, news }) {
         </section>
       )}
       {awards.length > 0 && (
-        <section className="mx-auto my-20 max-w-[1400px] px-5 md:px-10">
+        <section className="mx-auto my-8 lg:my-20 max-w-[1400px] px-5 md:px-10">
           <AwardsSection awards={awards} />
         </section>
       )}
       {board.length > 0 && (
-        <section className="mx-auto mt-40 max-w-[1400px] px-5 md:px-10">
+        <section className="mx-auto mt-16 lg:mt-40 max-w-[1400px] px-5 md:px-10">
           <div className="flex gap-2">
             <div className="h-3 w-3 shrink-0 rounded-full bg-black"></div>
             <h2 className="font-about-mvv-titles">Board of Directors</h2>
@@ -116,7 +116,7 @@ export default function About({ page, news }) {
         </section>
       )}
       {team.length > 0 && (
-        <section className="mx-auto mt-40 max-w-[1400px] px-5 md:px-10">
+        <section className="mx-auto mt-16 lg:mt-40 max-w-[1400px] px-5 md:px-10">
           <div className="flex gap-2">
             <div className="h-3 w-3 shrink-0 rounded-full bg-black"></div>
             <h2 className="font-about-mvv-titles">Our Team</h2>
@@ -137,7 +137,7 @@ export default function About({ page, news }) {
         </section>
       )}
       {news.length > 0 && (
-        <section className="mx-auto mt-40 mb-30 max-w-[1400px] px-5 md:px-10">
+        <section className="mx-auto mt-16 lg:mt-40 mb-30 max-w-[1400px] px-5 md:px-10">
           <h2 className="font-team-heading mt-8">
             Latest News & Community Updates
           </h2>

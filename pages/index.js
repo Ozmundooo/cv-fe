@@ -125,7 +125,7 @@ export default function Home({ home, programs, news, partners }) {
       )}
       <HomeFeatureCards cards={featureCards} />
       {programs.length > 0 && (
-        <section className="mx-auto mt-40 mb-30 max-w-[1400px] px-5 md:px-10">
+        <section className="mx-auto mt-16 lg:mt-40 lg:mb-30 max-w-[1400px] px-5 md:px-10">
           <h2 className="font-team-heading mt-8 max-w-[622px]">
             {home?.programsHeading ||
               "Programs That Bring Our Community Together"}
@@ -171,7 +171,7 @@ export default function Home({ home, programs, news, partners }) {
         </section>
       )}
       {partnerTiles.length > 0 && (
-        <section className="mx-auto mt-40 mb-30  ">
+        <section className="mx-auto mt-16 lg:mt-40 lg:mb-30  ">
           <div className="flex gap-2 text-center w-fit mx-auto">
             <div className="h-3 w-3 shrink-0 rounded-full bg-black"></div>
             <h2 className="font-about-mvv-titles">
@@ -183,7 +183,7 @@ export default function Home({ home, programs, news, partners }) {
       )}
 
       {news.length > 0 && (
-        <section className="mx-auto mt-40 mb-30 max-w-[1400px] px-5 md:px-10">
+        <section className="mx-auto mt-16 lg:mt-40 mb-16 lg:mb-30 max-w-[1400px] px-5 md:px-10">
           <h2 className="font-team-heading mt-8">
             {home?.newsHeading || "Latest News & Community Updates"}
           </h2>

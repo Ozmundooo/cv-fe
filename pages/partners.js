@@ -37,21 +37,23 @@ export default function Partners({ page }) {
     <main>
       <Navbar active="Partners" />
 
-      <div className="my-20 max-w-[1400px] mx-auto px-5 md:px-10">
+      <div className="mx-auto my-8 max-w-[1400px] px-5 md:px-10 lg:my-20">
         <h1 className="font-title max-w-[780px]">
           {page?.title ||
             "Building a Stronger Community Through Trusted Partnerships"}
         </h1>
 
         {page?.description && (
-          <p className="font-subtext max-w-[780px] mt-10">{page.description}</p>
+          <p className="mt-4 max-w-[780px] font-subtext lg:mt-10">
+            {page.description}
+          </p>
         )}
 
         {partnerCount > 0 ? (
           <>
             <div
               id="partners-grid"
-              className="mt-15 grid grid-cols-2 gap-[10px] md:grid-cols-3 lg:grid-cols-6 md:gap-[20px]"
+              className="mt-8 grid grid-cols-2 gap-[10px] md:grid-cols-3 md:gap-[20px] lg:mt-20 lg:grid-cols-6"
             >
               {currentPartners.map((partner, index) => (
                 <div
@@ -137,7 +139,7 @@ export default function Partners({ page }) {
             )}
           </>
         ) : (
-          <p className="mt-15 font-subtext text-[15px] text-[#1D1E22]">
+          <p className="mt-8 font-subtext text-[15px] text-[#1D1E22] lg:mt-20">
             No partners have been added yet.
           </p>
         )}

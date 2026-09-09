@@ -35,20 +35,22 @@ export default function Programs({ page, programs }) {
     <main>
       <Navbar active="Programs" />
 
-      <div className="my-20 max-w-[1400px] mx-auto px-5 md:px-10">
+      <div className="mx-auto my-8 max-w-[1400px] px-5 md:px-10 lg:my-20">
         <h1 className="font-title max-w-[780px]">
           {page?.title || "Programs That Bring Our Community Together"}
         </h1>
 
         {page?.description && (
-          <p className="font-subtext max-w-[780px] mt-10">{page.description}</p>
+          <p className="mt-4 max-w-[780px] font-subtext lg:mt-10">
+            {page.description}
+          </p>
         )}
 
         {programs.length > 0 ? (
           <>
             <div
               id="programs-grid"
-              className="mt-15 grid lg:grid-cols-2 gap-[10px] md:gap-[20px]"
+              className="mt-8 grid gap-[10px] md:gap-[20px] lg:mt-20 lg:grid-cols-2"
             >
               {currentPrograms.map((program) => (
                 <Link
