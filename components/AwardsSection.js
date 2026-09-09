@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import {
   Pagination,
   PaginationContent,
@@ -13,6 +12,7 @@ import {
 
 export default function AwardsSection({ awards, perPage = 3 }) {
   const [currentPage, setCurrentPage] = useState(1);
+  if (!awards?.length) return null;
   const totalPages = Math.ceil(awards.length / perPage);
   const pageStart = (currentPage - 1) * perPage;
   const currentAwards = awards.slice(pageStart, pageStart + perPage);
@@ -34,9 +34,9 @@ export default function AwardsSection({ awards, perPage = 3 }) {
       </p>
 
       <div id="awards-list" className="mt-10 space-y-10 lg:mt-14 lg:space-y-6">
-        {currentAwards.map((award) => (
+        {currentAwards.map((award, index) => (
           <article
-            key={award.id}
+            key={award._key ?? index}
             className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_230px_minmax(0,1fr)] lg:items-start lg:gap-16"
           >
             <div>
@@ -52,11 +52,14 @@ export default function AwardsSection({ awards, perPage = 3 }) {
                 </div>
               </dl>
             </div>
-            <Image
-              src={award.image}
-              alt={`${award.title} certificate from ${award.year}`}
-              className="mx-auto max-h-[298px] w-auto rounded-md object-contain"
-            />
+            {award.imageUrl && (
+              <img
+                src={award.imageUrl}
+                alt={`${award.title} certificate from ${award.year}`}
+                loading="lazy"
+                className="mx-auto max-h-[298px] w-auto rounded-md object-contain"
+              />
+            )}
             <p className="font-awards-description">{award.description}</p>
           </article>
         ))}

@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Image from "next/image";
-import SampleProgramsPhotoOne from "@/assets/SampleProgramsPhotoOne.png";
 
 import {
   Pagination,
@@ -14,63 +12,69 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Calendar } from "lucide-react";
 import Link from "next/link";
+import { getPage, getPrograms } from "@/lib/sanity";
 
-export default function Programs() {
-  const sampleProgramsCount = 6;
-  const programsPerPage = 4;
+const PROGRAMS_PER_PAGE = 4;
 
+export default function Programs({ page, programs }) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(sampleProgramsCount / programsPerPage);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(programs.length / PROGRAMS_PER_PAGE),
+  );
 
-  const startIndex = (currentPage - 1) * programsPerPage;
-  const currentPrograms = Array.from(
-    { length: Math.min(programsPerPage, sampleProgramsCount - startIndex) },
-    (_, index) => startIndex + index,
+  const startIndex = (currentPage - 1) * PROGRAMS_PER_PAGE;
+  const currentPrograms = programs.slice(
+    startIndex,
+    startIndex + PROGRAMS_PER_PAGE,
   );
 
   return (
     <main>
       <Navbar active="Programs" />
 
-      <div className="my-20 max-w-[1400px] mx-auto">
+      <div className="my-20 max-w-[1400px] mx-auto px-5 md:px-10">
         <h1 className="font-title max-w-[780px]">
-          Programs That Bring Our Community Together
+          {page?.title || "Programs That Bring Our Community Together"}
         </h1>
 
-        <p className="font-subtext max-w-[780px] mt-10">
-          Discover a variety of programs designed to support learning, wellness,
-          recreation, and connection for people of all ages at Crescent Village.
-        </p>
+        {page?.description && (
+          <p className="font-subtext max-w-[780px] mt-10">{page.description}</p>
+        )}
 
-        {sampleProgramsCount > 0 && (
+        {programs.length > 0 ? (
           <>
             <div
               id="programs-grid"
-              className="mt-15 grid grid-cols-2 gap-[10px]"
+              className="mt-15 grid lg:grid-cols-2 gap-[10px] md:gap-[20px]"
             >
               {currentPrograms.map((program) => (
                 <Link
-                  href={"/programs/sample-1"}
-                  key={program}
+                  href={`/programs/${program.slug?.current}`}
+                  key={program._id}
                   className=" group bg-[#FFFFFF] relative"
                 >
-                  <div className="absolute top-3 right-3 px-3 py-1 bg-terracotta rounded">
-                    <span className="font-card-news-type  text-white">
-                      Program Type
-                    </span>
-                  </div>
+                  {program.type && (
+                    <div className="absolute top-3 right-3 px-3 py-1 bg-terracotta rounded">
+                      <span className="font-card-news-type  text-white">
+                        {program.type}
+                      </span>
+                    </div>
+                  )}
 
-                  <Image
-                    src={SampleProgramsPhotoOne}
-                    alt={`Program ${program + 1} Photo`}
-                    className="w-full m-auto"
-                  />
+                  {program.imageUrl && (
+                    <img
+                      src={program.imageUrl}
+                      alt={program.title}
+                      loading="lazy"
+                      className="w-full m-auto"
+                    />
+                  )}
                   <div className="py-6 px-8 bg-sand group-hover:bg-sand/80 transition-all duration-150 ease-in-out">
                     <h2 className="font-card-title lg:w-3/4">
-                      Growing Together Community Garden Program
+                      {program.title}
                     </h2>
                   </div>
                 </Link>
@@ -143,10 +147,29 @@ export default function Programs() {
               </Pagination>
             )}
           </>
+        ) : (
+          <p className="mt-15 font-subtext text-[15px] text-[#1D1E22]">
+            No programs have been added yet.
+          </p>
         )}
       </div>
 
       <Footer />
     </main>
   );
+}
+
+export async function getStaticProps() {
+  const [page, programs] = await Promise.all([
+    getPage("programsPage"),
+    getPrograms(),
+  ]);
+
+  return {
+    props: {
+      page: page ?? null,
+      programs: programs ?? [],
+    },
+    revalidate: 60,
+  };
 }

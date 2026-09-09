@@ -1,24 +1,25 @@
 "use client";
 
-import Image from "next/image";
-
 export default function PartnersScroller({ partners }) {
-  if (!partners.length) {
+  if (!partners?.length) {
     return null;
   }
 
   const partnerTiles = (isDuplicate = false) =>
     partners.map((partner, index) => (
       <div
-        key={`${isDuplicate ? "duplicate-" : ""}${partner.id ?? index}`}
+        key={`${isDuplicate ? "duplicate-" : ""}${partner._key ?? index}`}
         aria-hidden={isDuplicate || undefined}
         className="flex aspect-square w-40 shrink-0 bg-[#FFFFFF]"
       >
-        <Image
-          src={partner.image}
-          alt={isDuplicate ? "" : partner.alt}
-          className="m-auto w-3/5"
-        />
+        {partner.imageUrl && (
+          <img
+            src={partner.imageUrl}
+            alt={isDuplicate ? "" : (partner.name ?? "")}
+            loading="lazy"
+            className="m-auto w-3/5"
+          />
+        )}
       </div>
     ));
 

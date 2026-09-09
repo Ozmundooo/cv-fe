@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Image from "next/image";
-import SampleLogo from "@/assets/SampleLogo.svg";
 
 import {
   Pagination,
@@ -14,50 +12,60 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { getPage, sanityImage } from "@/lib/sanity";
 
-export default function Partners() {
-  const samplePartnerCount = 35;
-  const partnersPerPage = 12;
+const PARTNERS_PER_PAGE = 12;
+
+export default function Partners({ page }) {
+  const partners = (page?.partners ?? []).map((partner) => ({
+    ...partner,
+    imageUrl: sanityImage(partner.logo),
+  }));
+  const partnerCount = partners.length;
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(samplePartnerCount / partnersPerPage);
+  const totalPages = Math.max(1, Math.ceil(partnerCount / PARTNERS_PER_PAGE));
 
-  const startIndex = (currentPage - 1) * partnersPerPage;
-  const currentPartners = Array.from(
-    { length: Math.min(partnersPerPage, samplePartnerCount - startIndex) },
-    (_, index) => startIndex + index,
+  const startIndex = (currentPage - 1) * PARTNERS_PER_PAGE;
+  const currentPartners = partners.slice(
+    startIndex,
+    startIndex + PARTNERS_PER_PAGE,
   );
 
   return (
     <main>
       <Navbar active="Partners" />
 
-      <div className="my-20 max-w-[1400px] mx-auto">
+      <div className="my-20 max-w-[1400px] mx-auto px-5 md:px-10">
         <h1 className="font-title max-w-[780px]">
-          Building a Stronger Community Through Trusted Partnerships
+          {page?.title ||
+            "Building a Stronger Community Through Trusted Partnerships"}
         </h1>
 
-        <p className="font-subtext max-w-[780px] mt-10">
-          We currently have {samplePartnerCount} trusted partners contributing
-          to our community. These partnerships help us grow and strengthen our
-          network. Without these partnerships, our community would not be as
-          strong and vibrant.
-        </p>
+        {page?.description && (
+          <p className="font-subtext max-w-[780px] mt-10">{page.description}</p>
+        )}
 
-        {samplePartnerCount > 0 && (
+        {partnerCount > 0 ? (
           <>
             <div
               id="partners-grid"
-              className="mt-15 grid grid-cols-6 gap-[10px]"
+              className="mt-15 grid grid-cols-2 gap-[10px] md:grid-cols-3 lg:grid-cols-6 md:gap-[20px]"
             >
-              {currentPartners.map((partner) => (
-                <div key={partner} className="aspect-square flex bg-[#FFFFFF]">
-                  <Image
-                    src={SampleLogo}
-                    alt={`Partner ${partner + 1} Logo`}
-                    className="w-3/5 m-auto"
-                  />
+              {currentPartners.map((partner, index) => (
+                <div
+                  key={partner._key ?? index}
+                  className="aspect-square flex bg-[#FFFFFF]"
+                >
+                  {partner.imageUrl && (
+                    <img
+                      src={partner.imageUrl}
+                      alt={partner.name ? `${partner.name} logo` : ""}
+                      loading="lazy"
+                      className="w-3/5 m-auto"
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -128,10 +136,25 @@ export default function Partners() {
               </Pagination>
             )}
           </>
+        ) : (
+          <p className="mt-15 font-subtext text-[15px] text-[#1D1E22]">
+            No partners have been added yet.
+          </p>
         )}
       </div>
 
       <Footer />
     </main>
   );
+}
+
+export async function getStaticProps() {
+  const page = await getPage("partnersPage");
+
+  return {
+    props: {
+      page: page ?? null,
+    },
+    revalidate: 60,
+  };
 }

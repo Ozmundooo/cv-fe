@@ -11,38 +11,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { getPage, getResources } from "@/lib/sanity";
 
-const filterGroups = [
-  {
-    id: "audience",
-    label: "Audience",
-    options: ["Residents", "Families", "Seniors", "Youth", "Community"],
-  },
-  {
-    id: "topic",
-    label: "Topic",
-    options: [
-      "Housing",
-      "Programs",
-      "Health & Wellness",
-      "Policies",
-      "Services",
-    ],
-  },
-];
+function formatBytes(bytes) {
+  if (!bytes) return "";
+  const mb = bytes / (1024 * 1024);
+  if (mb >= 1) return `${mb.toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
 
-const resources = Array.from({ length: 30 }, (_, index) => ({
-  id: index + 1,
-  title: `Resource ${index + 1}`,
-  description:
-    "A short guide with practical information, helpful support, and resources for the Crescent Village community.",
-  categories:
-    index % 2
-      ? ["Policies & Guidelines"]
-      : ["Resident Information", "Policies & Guidelines"],
-  audience: filterGroups[0].options[index % 5],
-  topic: filterGroups[1].options[index % 5],
-}));
+function formatUpdatedAt(dateString) {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+  });
+}
 
 function ResourceDialog({ resource }) {
   return (
@@ -65,28 +49,26 @@ function ResourceDialog({ resource }) {
             <DialogDescription className="mt-3 font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
               {resource.description}
             </DialogDescription>
-            <p className="mt-3 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
-              PDF - 1.2 MB
-            </p>
-            <p className="font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
-              Updated Jul 2026
-            </p>
-            {/* <div className="mt-4 flex flex-wrap gap-2">
-              {resource.categories.map((category) => (
-                <span
-                  key={category}
-                  className="rounded-md bg-terracotta px-3 py-2 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-white"
-                >
-                  {category}
-                </span>
-              ))}
-            </div> */}
+            {(resource.fileSize || resource.updatedAt) && (
+              <p className="mt-3 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
+                {[
+                  resource.fileSize
+                    ? `PDF - ${formatBytes(resource.fileSize)}`
+                    : null,
+                  resource.updatedAt
+                    ? `Updated ${formatUpdatedAt(resource.updatedAt)}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              </p>
+            )}
           </div>
         </div>
         <div className="min-h-0 bg-[#1D1E22] p-6 md:p-12">
           <iframe
             title={`${resource.title} preview`}
-            src="/sample.pdf"
+            src={resource.fileUrl || "/sample.pdf"}
             className="h-full w-full rounded-xl bg-white"
           />
         </div>
@@ -95,16 +77,19 @@ function ResourceDialog({ resource }) {
   );
 }
 
-export default function Resources() {
+export default function Resources({ page, resources }) {
+  const filterGroups = (page?.filterGroups ?? []).map((group) => ({
+    ...group,
+    id: group.label?.toLowerCase(),
+  }));
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedFilters, setSelectedFilters] = useState({
-    audience: [],
-    topic: [],
-  });
+  const [selectedFilters, setSelectedFilters] = useState(() =>
+    Object.fromEntries(filterGroups.map((group) => [group.id, []])),
+  );
   const filteredResources = resources.filter((resource) =>
     filterGroups.every(
       ({ id }) =>
-        !selectedFilters[id].length ||
+        !selectedFilters[id]?.length ||
         selectedFilters[id].includes(resource[id]),
     ),
   );
@@ -118,9 +103,9 @@ export default function Resources() {
     setCurrentPage(1);
     setSelectedFilters((current) => ({
       ...current,
-      [groupId]: current[groupId].includes(option)
+      [groupId]: current[groupId]?.includes(option)
         ? current[groupId].filter((item) => item !== option)
-        : [...current[groupId], option],
+        : [...(current[groupId] ?? []), option],
     }));
   }
 
@@ -129,71 +114,89 @@ export default function Resources() {
       <Navbar active="Resources" />
       <section className="mx-auto my-20 max-w-[1400px] px-5 md:px-10">
         <h1 className="font-title max-w-[591px]">
-          Important Resources, Guides & Useful Links
+          {page?.title || "Important Resources, Guides & Useful Links"}
         </h1>
-        <p className="mt-10 max-w-[622px] font-subtext text-[15px] leading-5 tracking-[-0.04em] text-[#1D1E22]/80">
-          Access important documents, helpful guides, and trusted resources
-          designed to keep you informed, connected, and supported throughout
-          your Crescent Village experience.
-        </p>
+        {page?.description && (
+          <p className="mt-10 max-w-[622px] font-subtext text-[15px] leading-5 tracking-[-0.04em] text-[#1D1E22]/80">
+            {page.description}
+          </p>
+        )}
         <div className="mt-20 grid gap-[10px] lg:grid-cols-[215px_1fr]">
-          <aside className="h-fit rounded-md bg-white p-4">
-            <h2 className="font-subtext text-[24px] font-bold leading-[31px] tracking-[-0.04em] text-[#1D1E22]">
-              Filters
-            </h2>
-            <div className="mt-6 space-y-6">
-              {filterGroups.map((group) => (
-                <details key={group.id} open>
-                  <summary className="flex cursor-pointer list-none items-center justify-between font-subtext text-[15px] font-medium leading-5 tracking-[-0.04em] text-[#1D1E22] [&::-webkit-details-marker]:hidden">
-                    {group.label}
-                    <ChevronDown size={16} />
-                  </summary>
-                  <fieldset className="mt-3 space-y-2">
-                    <legend className="sr-only">{group.label}</legend>
-                    {group.options.map((option) => (
-                      <label
-                        key={option}
-                        className="flex cursor-pointer items-center gap-2 font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedFilters[group.id].includes(option)}
-                          onChange={() => toggleFilter(group.id, option)}
-                          className="h-4 w-4 rounded-sm border-[#1D1E22] accent-[#1D1E22]"
-                        />
-                        {option}
-                      </label>
-                    ))}
-                  </fieldset>
-                </details>
-              ))}
-            </div>
-          </aside>
+          {filterGroups.length > 0 && (
+            <aside className="h-fit rounded-md bg-white p-4">
+              <h2 className="font-subtext text-[24px] font-bold leading-[31px] tracking-[-0.04em] text-[#1D1E22]">
+                Filters
+              </h2>
+              <div className="mt-6 space-y-6">
+                {filterGroups.map((group) => (
+                  <details key={group.id} open>
+                    <summary className="flex cursor-pointer list-none items-center justify-between font-subtext text-[15px] font-medium leading-5 tracking-[-0.04em] text-[#1D1E22] [&::-webkit-details-marker]:hidden">
+                      {group.label}
+                      <ChevronDown size={16} />
+                    </summary>
+                    <fieldset className="mt-3 space-y-2">
+                      <legend className="sr-only">{group.label}</legend>
+                      {(group.options ?? []).map((option) => (
+                        <label
+                          key={option}
+                          className="flex cursor-pointer items-center gap-2 font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={
+                              selectedFilters[group.id]?.includes(option) ??
+                              false
+                            }
+                            onChange={() => toggleFilter(group.id, option)}
+                            className="h-4 w-4 rounded-sm border-[#1D1E22] accent-[#1D1E22]"
+                          />
+                          {option}
+                        </label>
+                      ))}
+                    </fieldset>
+                  </details>
+                ))}
+              </div>
+            </aside>
+          )}
           <div id="resource-grid" className="grid gap-[10px] md:grid-cols-2">
             {currentResources.map((resource) => (
               <article
-                key={resource.id}
+                key={resource._id}
                 className="relative min-h-[136px] rounded bg-white p-4"
               >
-                <div className="flex flex-wrap gap-2 md:absolute md:right-4 md:top-4">
-                  {resource.categories.map((category) => (
-                    <span
-                      key={category}
-                      className="rounded-md bg-terracotta px-2 py-1 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-white"
-                    >
-                      {category}
-                    </span>
-                  ))}
-                </div>
+                {(resource.categories ?? []).length > 0 && (
+                  <div className="flex flex-wrap gap-2 md:absolute md:right-4 md:top-4">
+                    {resource.categories.map((category) => (
+                      <span
+                        key={category}
+                        className="rounded-md bg-terracotta px-2 py-1 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-white"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <h2 className="font-subtext text-[24px] font-medium leading-[31px] tracking-[-0.04em] text-[#1D1E22]">
                   {resource.title}
                 </h2>
-                <p className="mt-2 max-w-[287px] font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
-                  {resource.description}
-                </p>
+                {resource.description && (
+                  <p className="mt-2 max-w-[287px] font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
+                    {resource.description}
+                  </p>
+                )}
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <p className="font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
-                    PDF - 1.2 MB <span className="mx-3">Updated Jul 2026</span>
+                    {[
+                      resource.fileSize
+                        ? `PDF - ${formatBytes(resource.fileSize)}`
+                        : null,
+                      resource.updatedAt
+                        ? `Updated ${formatUpdatedAt(resource.updatedAt)}`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
                   <ResourceDialog resource={resource} />
                 </div>
@@ -247,4 +250,19 @@ export default function Resources() {
       <Footer />
     </main>
   );
+}
+
+export async function getStaticProps() {
+  const [page, resources] = await Promise.all([
+    getPage("resourcesPage"),
+    getResources(),
+  ]);
+
+  return {
+    props: {
+      page: page ?? null,
+      resources: resources ?? [],
+    },
+    revalidate: 60,
+  };
 }

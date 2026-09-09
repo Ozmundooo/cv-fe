@@ -48,12 +48,12 @@ export default function Navbar({ active, className = "" }) {
         </ul>
 
         {/* Desktop CTA */}
-        <a
+        <Link
           href="/forms"
           className="hidden h-[38px] w-[108px] items-center justify-center rounded-md bg-green font-subtext text-[15px] font-medium tracking-[-0.04em] text-cream transition-opacity hover:opacity-90 md:flex"
         >
           Fill out forms
-        </a>
+        </Link>
 
         {/* Mobile hamburger */}
         <button
@@ -93,7 +93,7 @@ export default function Navbar({ active, className = "" }) {
             ))}
           </ul>
           <a
-            href="#"
+            href="/forms"
             className="mt-4 flex h-[38px] w-full items-center justify-center rounded-md bg-green font-subtext text-[15px] font-medium tracking-[-0.04em] text-cream transition-opacity hover:opacity-90"
           >
             Fill out forms

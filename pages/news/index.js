@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Image from "next/image";
-import SampleNewsPhotoOne from "@/assets/SampleNewsPhotoOne.png";
 
 import {
   Pagination,
@@ -16,66 +14,83 @@ import {
 } from "@/components/ui/pagination";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
+import { getPage, getNews } from "@/lib/sanity";
 
-export default function News() {
-  const sampleNewsCount = 6;
-  const newsPerPage = 4;
+const NEWS_PER_PAGE = 4;
 
+function formatDate(dateString) {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+export default function News({ page, news }) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(sampleNewsCount / newsPerPage);
+  const totalPages = Math.max(1, Math.ceil(news.length / NEWS_PER_PAGE));
 
-  const startIndex = (currentPage - 1) * newsPerPage;
-  const currentNews = Array.from(
-    { length: Math.min(newsPerPage, sampleNewsCount - startIndex) },
-    (_, index) => startIndex + index,
-  );
+  const startIndex = (currentPage - 1) * NEWS_PER_PAGE;
+  const currentNews = news.slice(startIndex, startIndex + NEWS_PER_PAGE);
 
   return (
     <main>
       <Navbar active="News" />
 
-      <div className="my-20 max-w-[1400px] mx-auto">
+      <div className="my-20 max-w-[1400px] mx-auto px-5 md:px-10">
         <h1 className="font-title max-w-[780px]">
-          Latest News & Community Updates
+          {page?.title || "Latest News & Community Updates"}
         </h1>
 
-        <p className="font-subtext max-w-[780px] mt-10">
-          Stay informed with the latest announcements, upcoming events,
-          community stories, and important updates from Crescent Village.
-        </p>
+        {page?.description && (
+          <p className="font-subtext max-w-[780px] mt-10">{page.description}</p>
+        )}
 
-        {sampleNewsCount > 0 && (
+        {news.length > 0 ? (
           <>
-            <div id="news-grid" className="mt-15 grid grid-cols-2 gap-[10px]">
-              {currentNews.map((news) => (
+            <div
+              id="news-grid"
+              className="mt-15 grid grid-cols-1 gap-[10px] md:grid-cols-2 md:gap-[20px]"
+            >
+              {currentNews.map((article) => (
                 <Link
-                  href={"/news/sample-1"}
-                  key={news}
+                  href={`/news/${article.slug?.current}`}
+                  key={article._id}
                   className=" group bg-[#FFFFFF] relative"
                 >
-                  <div className="absolute top-3 right-3 px-3 py-1 bg-terracotta rounded">
-                    <span className="font-card-news-type  text-white">
-                      News Type
-                    </span>
-                  </div>
-
-                  <Image
-                    src={SampleNewsPhotoOne}
-                    alt={`News ${news + 1} Photo`}
-                    className="w-full m-auto"
-                  />
-                  <div className="py-6 px-8 bg-sand group-hover:bg-sand/80 transition-all duration-150 ease-in-out">
-                    <div className="flex items-center mb-2">
-                      <Calendar
-                        className="inline-block mr-2"
-                        size={20}
-                        strokeWidth={1}
-                      />
-                      <p className="font-card-date">August 24th, 2026</p>
+                  {article.type && (
+                    <div className="absolute top-3 right-3 px-3 py-1 bg-terracotta rounded">
+                      <span className="font-card-news-type  text-white">
+                        {article.type}
+                      </span>
                     </div>
+                  )}
+
+                  {article.imageUrl && (
+                    <img
+                      src={article.imageUrl}
+                      alt={article.title}
+                      loading="lazy"
+                      className="w-full m-auto"
+                    />
+                  )}
+                  <div className="py-6 px-8 bg-sand group-hover:bg-sand/80 transition-all duration-150 ease-in-out">
+                    {article.publishedAt && (
+                      <div className="flex items-center mb-2">
+                        <Calendar
+                          className="inline-block mr-2"
+                          size={20}
+                          strokeWidth={1}
+                        />
+                        <p className="font-card-date">
+                          {formatDate(article.publishedAt)}
+                        </p>
+                      </div>
+                    )}
                     <h2 className="font-card-title lg:w-3/4">
-                      Celebrating Our Community, One Neighbour at a Time
+                      {article.title}
                     </h2>
                   </div>
                 </Link>
@@ -148,10 +163,26 @@ export default function News() {
               </Pagination>
             )}
           </>
+        ) : (
+          <p className="mt-15 font-subtext text-[15px] text-[#1D1E22]">
+            No news articles have been added yet.
+          </p>
         )}
       </div>
 
       <Footer />
     </main>
   );
+}
+
+export async function getStaticProps() {
+  const [page, news] = await Promise.all([getPage("newsPage"), getNews()]);
+
+  return {
+    props: {
+      page: page ?? null,
+      news: news ?? [],
+    },
+    revalidate: 60,
+  };
 }
