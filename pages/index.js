@@ -60,19 +60,32 @@ export default function Home({ home, programs, news, partners }) {
     imageUrl: sanityImage(partner.logo),
   }));
 
+  const heroVideoUrl = home?.heroMedia?.videoUrl;
+  const heroImageUrl = sanityImage(home?.heroMedia?.image);
+
   return (
     <main className="relative">
       <Navbar active="Home" className="absolute inset-x-0 top-0 z-10" />
       <section className="relative min-h-screen overflow-hidden">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 h-full w-full object-cover"
-        >
-          <source src={home?.heroVideo || "/homeVideo.mp4"} type="video/mp4" />
-        </video>
+        {heroVideoUrl ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+          >
+            <source src={heroVideoUrl} type="video/mp4" />
+          </video>
+        ) : heroImageUrl ? (
+          <img
+            src={heroImageUrl}
+            alt={home?.heroTitle || "Hero image"}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <></>
+        )}
         <div className="absolute inset-0 bg-black/5"></div>
         <div className="absolute inset-0 flex flex-col items-center justify-end mb-10 px-5 pt-24">
           <h1 className="font-home-hero-title max-w-[700px] text-center">
