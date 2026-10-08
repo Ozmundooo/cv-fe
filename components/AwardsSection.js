@@ -60,7 +60,7 @@ export default function AwardsSection({ awards, perPage = 3 }) {
                 className="mx-auto max-h-[298px] w-auto rounded-md object-contain"
               />
             )}
-            <p className="font-awards-description">{award.description}</p>
+            {/* <p className="font-awards-description">{award.description}</p> */}
           </article>
         ))}
       </div>
