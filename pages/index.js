@@ -86,7 +86,7 @@ export default function Home({ home, programs, news, partners }) {
         ) : (
           <></>
         )}
-        <div className="absolute inset-0 bg-black/5"></div>
+        <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute inset-0 flex flex-col items-center justify-end mb-10 px-5 pt-24">
           <h1 className="font-home-hero-title max-w-[700px] text-center">
             {home?.heroTitle || "More Than Housing. A Place to Belong."}
