@@ -39,12 +39,12 @@ export default function Footer() {
                   </span>
                 </a>
                 <a
-                  href="mailto:hamida.merchant@crescentvillage.org"
+                  href="mailto:housing@crescentvillage.org"
                   className="flex w-fit items-center gap-3 transition-opacity duration-200 hover:opacity-70"
                 >
                   <Mail size={16} strokeWidth={2} />
                   <span className="font-subtext text-[15px] font-normal leading-5 tracking-[-0.04em] text-black">
-                    hamida.merchant@crescentvillage.org
+                    housing@crescentvillage.org
                   </span>
                 </a>
               </div>
