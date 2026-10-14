@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PortableText from "@/components/PortableText";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -39,7 +40,7 @@ function ResourceDialog({ resource }) {
       </DialogTrigger>
       <DialogContent
         showCloseButton={false}
-        className="grid h-[min(568px,calc(100vh-2rem))] max-w-[calc(100%-2rem)] grid-cols-1 gap-0 overflow-hidden rounded-xl bg-[#1D1E22] p-0 text-[#1D1E22] sm:max-w-[908px] md:grid-cols-[30%_70%]"
+        className={`grid h-[min(568px,calc(100vh-2rem))] max-w-[calc(100%-2rem)]  grid-cols-1 gap-0 overflow-y-scroll rounded-xl bg-[#1D1E22] p-0 text-[#1D1E22] sm:max-w-[908px] ${resource.fileUrl ? "md:grid-cols-[30%_70%]" : ""}`}
       >
         <div className="flex flex-col justify-between bg-cream p-6">
           <div>
@@ -48,6 +49,11 @@ function ResourceDialog({ resource }) {
             </DialogTitle>
             <DialogDescription className="mt-3 font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
               {resource.description}
+              {resource.body && (
+                <div className="mt-3 text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
+                  <PortableText blocks={resource.body} />
+                </div>
+              )}
             </DialogDescription>
             {(resource.fileSize || resource.updatedAt) && (
               <p className="mt-3 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
@@ -65,13 +71,15 @@ function ResourceDialog({ resource }) {
             )}
           </div>
         </div>
-        <div className="min-h-0 bg-[#1D1E22] p-6 md:p-12">
-          <iframe
-            title={`${resource.title} preview`}
-            src={resource.fileUrl || "/sample.pdf"}
-            className="h-full w-full rounded-xl bg-white"
-          />
-        </div>
+        {resource.fileUrl && (
+          <div className="min-h-0 bg-[#1D1E22] p-4 md:p-6">
+            <iframe
+              title={`${resource.title} preview`}
+              src={`${resource.fileUrl}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
+              className="h-full w-full rounded-xl border-0 bg-white"
+            />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
