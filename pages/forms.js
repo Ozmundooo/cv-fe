@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PortableText from "@/components/PortableText";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -28,7 +29,209 @@ function formatUpdatedAt(dateString) {
   });
 }
 
+function FormFields({ fields, title }) {
+  const [submissionState, setSubmissionState] = useState({
+    status: "idle",
+    message: "",
+  });
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+    if (!accessKey) {
+      setSubmissionState({
+        status: "error",
+        message:
+          "This form is unavailable because its submission service has not been configured.",
+      });
+      return;
+    }
+
+    const submittedForm = event.currentTarget;
+    const formData = new FormData(submittedForm);
+    const missingCheckboxSelection = fields.find(
+      (field) =>
+        field.fieldType === "checkboxes" &&
+        field.required &&
+        formData.getAll(field.fieldName || field._key).length === 0,
+    );
+
+    if (missingCheckboxSelection) {
+      setSubmissionState({
+        status: "error",
+        message: `Please select at least one option for ${missingCheckboxSelection.fieldName}.`,
+      });
+      return;
+    }
+
+    formData.set("access_key", accessKey);
+    formData.set("subject", `Form completed - ${title}`);
+    formData.set("from_name", "Crescent Village Website");
+    setSubmissionState({ status: "submitting", message: "" });
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: formData,
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Web3Forms could not submit the form.");
+      }
+
+      submittedForm.reset();
+      setSubmissionState({
+        status: "success",
+        message: "Thank you. Your form has been submitted.",
+      });
+    } catch (error) {
+      setSubmissionState({
+        status: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "The form could not be submitted. Please try again.",
+      });
+    }
+  }
+
+  return (
+    <form className="space-y-4 bg-cream pb-10" onSubmit={handleSubmit}>
+      {fields.map((field) => {
+        const fieldId = `form-field-${field._key}`;
+        const fieldName = field.fieldName || field._key;
+        const commonProps = {
+          id: fieldId,
+          name: fieldName,
+          required: field.required,
+        };
+
+        if (field.fieldType === "textarea") {
+          return (
+            <label
+              key={field._key}
+              className="block font-subtext text-[12px] leading-4 tracking-[-0.04em] text-black"
+            >
+              {field.fieldName}
+              {field.required && <span aria-hidden="true"> *</span>}
+              <textarea
+                {...commonProps}
+                rows={4}
+                className="mt-2 block w-full resize-y rounded-md border border-white/30 bg-white px-3 py-2 text-[#1D1E22] outline-none focus:border-[#D66E4A]"
+              />
+            </label>
+          );
+        }
+
+        if (field.fieldType === "select") {
+          return (
+            <label
+              key={field._key}
+              className="block font-subtext text-[12px] leading-4 tracking-[-0.04em] text-black"
+            >
+              {field.fieldName}
+              {field.required && <span aria-hidden="true"> *</span>}
+              <select
+                {...commonProps}
+                defaultValue=""
+                className="mt-2 block w-full rounded-md border border-white/30 bg-white px-3 py-2 text-[#1D1E22] outline-none focus:border-[#D66E4A]"
+              >
+                <option value="" disabled>
+                  Select an option
+                </option>
+                {(field.options ?? []).map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          );
+        }
+
+        if (field.fieldType === "checkboxes" || field.fieldType === "radio") {
+          const inputType = field.fieldType === "radio" ? "radio" : "checkbox";
+
+          return (
+            <fieldset key={field._key}>
+              <legend className="font-subtext text-[12px] leading-4 tracking-[-0.04em] text-black">
+                {field.fieldName}
+                {field.required && <span aria-hidden="true"> *</span>}
+              </legend>
+              <div className="mt-2 space-y-2">
+                {(field.options ?? []).map((option, index) => {
+                  const optionId = `${fieldId}-${index}`;
+
+                  return (
+                    <label
+                      key={option}
+                      htmlFor={optionId}
+                      className="flex items-center gap-2 font-subtext text-[12px] leading-4 tracking-[-0.04em] text-black"
+                    >
+                      <input
+                        id={optionId}
+                        type={inputType}
+                        name={fieldName}
+                        value={option}
+                        required={
+                          field.required && inputType === "radio" && index === 0
+                        }
+                        className="h-4 w-4 accent-[#D66E4A]"
+                      />
+                      {option}
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
+          );
+        }
+
+        return (
+          <label
+            key={field._key}
+            className="block font-subtext text-[12px] leading-4 tracking-[-0.04em] text-black"
+          >
+            {field.fieldName}
+            {field.required && <span aria-hidden="true"> *</span>}
+            <input
+              {...commonProps}
+              type={field.fieldType === "email" ? "email" : "text"}
+              className="mt-2 block w-full rounded-md border border-white/30 bg-white px-3 py-2 text-[#1D1E22] outline-none focus:border-[#D66E4A]"
+            />
+          </label>
+        );
+      })}
+      <button
+        type="submit"
+        disabled={submissionState.status === "submitting"}
+        className="mt-4 rounded-md bg-[#D66E4A] px-4 py-2 font-subtext text-[12px] leading-4 tracking-[-0.04em] text-cream hover:opacity-80"
+      >
+        {submissionState.status === "submitting" ? "Submitting..." : "Submit"}
+      </button>
+      {submissionState.message && (
+        <p
+          aria-live="polite"
+          className={`font-subtext text-[12px] leading-4 tracking-[-0.04em] ${
+            submissionState.status === "success"
+              ? "text-green-800"
+              : "text-red-700"
+          }`}
+        >
+          {submissionState.message}
+        </p>
+      )}
+    </form>
+  );
+}
+
 function FormDialog({ form }) {
+  const hasFormFields = form.form?.length > 0;
+  const showFilePreview = form.fileUrl && !hasFormFields;
+
   return (
     <Dialog size="lg">
       <DialogTrigger
@@ -39,7 +242,7 @@ function FormDialog({ form }) {
       </DialogTrigger>
       <DialogContent
         showCloseButton={false}
-        className="grid h-[min(568px,calc(100vh-2rem))] max-w-[calc(100%-2rem)] grid-cols-1 gap-0 overflow-hidden rounded-xl bg-[#1D1E22] p-0 text-[#1D1E22] sm:max-w-[908px] md:grid-cols-[30%_70%]"
+        className={`grid bg-cream h-[min(568px,calc(100vh-2rem))] max-w-[calc(100%-2rem)] grid-cols-1 gap-0 overflow-y-scroll rounded-xl p-0 text-[#1D1E22] sm:max-w-[908px] ${hasFormFields || showFilePreview ? "md:grid-cols-[30%_70%]" : ""}`}
       >
         <div className="flex flex-col justify-between bg-cream p-6">
           <div>
@@ -48,11 +251,18 @@ function FormDialog({ form }) {
             </DialogTitle>
             <DialogDescription className="mt-3 font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
               {form.description}
+              {form.body && (
+                <div className="mt-3 text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
+                  <PortableText blocks={form.body} />
+                </div>
+              )}
             </DialogDescription>
-            {(form.fileSize || form.updatedAt) && (
+            {(showFilePreview && form.fileSize) || form.updatedAt ? (
               <p className="mt-3 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
                 {[
-                  form.fileSize ? `PDF - ${formatBytes(form.fileSize)}` : null,
+                  showFilePreview && form.fileSize
+                    ? `PDF - ${formatBytes(form.fileSize)}`
+                    : null,
                   form.updatedAt
                     ? `Updated ${formatUpdatedAt(form.updatedAt)}`
                     : null,
@@ -60,16 +270,23 @@ function FormDialog({ form }) {
                   .filter(Boolean)
                   .join(" ")}
               </p>
-            )}
+            ) : null}
           </div>
         </div>
-        <div className="min-h-0 bg-[#1D1E22] p-6 md:p-12">
-          <iframe
-            title={`${form.title} preview`}
-            src={form.fileUrl || "/sample.pdf"}
-            className="h-full w-full rounded-xl bg-white"
-          />
-        </div>
+        {hasFormFields && (
+          <div className="min-h-0 bg-cream p-4 md:p-6">
+            <FormFields fields={form.form} title={form.title} />
+          </div>
+        )}
+        {showFilePreview && (
+          <div className="min-h-0 bg-[#1D1E22] p-4 md:p-6">
+            <iframe
+              title={`${form.title} preview`}
+              src={`${form.fileUrl}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
+              className="h-full w-full rounded-xl border-0 bg-white"
+            />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -185,9 +402,11 @@ export default function Forms({ page, forms }) {
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <p className="font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
                     {[
-                      form.fileSize
-                        ? `PDF - ${formatBytes(form.fileSize)}`
-                        : null,
+                      form.form?.length
+                        ? "Online form"
+                        : form.fileSize
+                          ? `PDF - ${formatBytes(form.fileSize)}`
+                          : null,
                       form.updatedAt
                         ? `Updated ${formatUpdatedAt(form.updatedAt)}`
                         : null,
