@@ -4,6 +4,7 @@ import { useState } from "react";
 import PortableText from "@/components/PortableText";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import {
   Dialog,
   DialogContent,
@@ -325,6 +326,19 @@ export default function Forms({ page, forms }) {
 
   return (
     <main>
+      <Metatags
+        title={
+          page?.metaTitle ||
+          page?.title ||
+          "Forms | Crescent Village"
+        }
+        description={
+          page?.metaDescription ||
+          page?.description ||
+          "Access forms, applications, and important documents for Crescent Village residents and families."
+        }
+        canonicalLink="/forms"
+      />
       <Navbar active="Forms" />
       <section className="mx-auto my-8 lg:my-20 max-w-[1400px] px-5 md:px-10">
         <h1 className="font-title max-w-[591px]">

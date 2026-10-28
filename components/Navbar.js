@@ -1,6 +1,9 @@
 import Link from "next/link";
 import React, { useState } from "react";
-
+import Image from "next/image";
+import MainLogo from "@/assets/Logo/mainLogo.svg";
+import SeniorLogo from "@/assets/Logo/seniorLogo.svg";
+import TrustLogo from "@/assets/Logo/trustLogo.svg";
 const navLinks = [
   { label: "About", href: "/about" },
   { label: "Programs", href: "/programs" },
@@ -10,7 +13,7 @@ const navLinks = [
   { label: "Resources", href: "/resources" },
 ];
 
-export default function Navbar({ active, className = "" }) {
+export default function Navbar({ active, className = "", page }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isHome = active === "Home";
 
@@ -21,9 +24,15 @@ export default function Navbar({ active, className = "" }) {
         <div className="flex shrink-0 items-center">
           <Link
             href="/"
-            className={`font-subtext text-[15px] font-bold tracking-[-0.02em] ${isHome ? "text-white" : "text-black"}`}
+            className={`font-subtext text-[15px] font-bold tracking-[-0.02em] w-24 ${isHome ? "text-white" : "text-black"}`}
           >
-            Logoipsum
+            {page === "senior" ? (
+              <Image src={SeniorLogo} alt="Senior Logo" />
+            ) : page === "trust" ? (
+              <Image src={TrustLogo} alt="Trust Logo" />
+            ) : (
+              <Image src={MainLogo} alt="Main Logo" />
+            )}
           </Link>
         </div>
 

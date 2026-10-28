@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 
 import {
   Pagination,
@@ -33,6 +34,19 @@ export default function Programs({ page, programs }) {
 
   return (
     <main>
+      <Metatags
+        title={
+          page?.metaTitle ||
+          page?.title ||
+          "Programs | Crescent Village"
+        }
+        description={
+          page?.metaDescription ||
+          page?.description ||
+          "Explore programs designed to support learning, wellness, recreation, and meaningful connections at Crescent Village."
+        }
+        canonicalLink="/programs"
+      />
       <Navbar active="Programs" />
 
       <div className="mx-auto my-8 max-w-[1400px] px-5 md:px-10 lg:my-20">

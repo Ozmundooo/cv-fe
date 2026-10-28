@@ -1,29 +1,56 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import Lightbox from "yet-another-react-lightbox";
 import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
-import { getGalleryImages, getPage, urlFor } from "@/lib/sanity";
+import {
+  getGalleryAlbumBySlug,
+  getGalleryAlbumSlugs,
+  urlFor,
+} from "@/lib/sanity";
 
-export default function Gallery({ page, images }) {
+export default function GalleryAlbum({ album }) {
   const [selectedImage, setSelectedImage] = useState(-1);
+  if (!album) return null;
 
+  const images = (album.images ?? []).filter((image) => image.imageUrl);
   const lightboxSlides = images.map((image, index) => ({
     src: image.imageUrl,
-    alt: `Crescent Village community moment ${index + 1}`,
+    alt: `${album.title} photo ${index + 1}`,
   }));
 
   return (
     <main className="bg-cream">
+      <Metatags
+        title={
+          album.metaTitle ||
+          (album.title ? `${album.title} | Crescent Village Gallery` : "Gallery | Crescent Village")
+        }
+        description={
+          album.metaDescription ||
+          album.description ||
+          "Browse this Crescent Village photo album."
+        }
+        canonicalLink={`/gallery/${album.slug?.current ?? ""}`}
+        imageUrl={album.coverUrl}
+      />
       <Navbar active="Gallery" />
       <section className="mx-auto max-w-[1400px] px-5 py-8 md:px-10 lg:py-20">
-        <h1 className="font-title">{page?.title || "Gallery"}</h1>
+        <Link href="/gallery" className="font-subtext text-[15px] underline">
+          &larr; All albums
+        </Link>
+        <h1 className="font-title mt-4">{album.title}</h1>
+        {album.description && (
+          <p className="font-subtext mt-4 max-w-[700px]">{album.description}</p>
+        )}
         {images.length > 0 ? (
-          <div className="mt-4 lg:mt-10 grid  grid-cols-2 gap-2  md:grid-cols-4 ">
+          <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4 lg:mt-10">
             {images.map((image, index) => (
               <figure
                 key={image._key ?? index}
@@ -33,11 +60,11 @@ export default function Gallery({ page, images }) {
                   type="button"
                   onClick={() => setSelectedImage(index)}
                   className="block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
-                  aria-label={`Open community moment ${index + 1}`}
+                  aria-label={`Open photo ${index + 1}`}
                 >
                   <img
-                    src={urlFor(image.imageUrl).format("webp").url()}
-                    alt={`Crescent Village community moment ${index + 1}`}
+                    src={urlFor(image).format("webp").url()}
+                    alt={`${album.title} photo ${index + 1}`}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
                   />
@@ -47,7 +74,7 @@ export default function Gallery({ page, images }) {
           </div>
         ) : (
           <p className="mt-10 font-subtext text-[15px] text-[#1D1E22]">
-            No gallery images are available yet.
+            This album has no photos yet.
           </p>
         )}
       </section>
@@ -73,17 +100,21 @@ export default function Gallery({ page, images }) {
   );
 }
 
-export async function getStaticProps() {
-  const [page, images] = await Promise.all([
-    getPage("galleryPage"),
-    getGalleryImages(),
-  ]);
+export async function getStaticPaths() {
+  const slugs = await getGalleryAlbumSlugs();
 
   return {
-    props: {
-      page: page ?? null,
-      images: images ?? [],
-    },
-    revalidate: 60,
+    paths: (slugs ?? []).filter(Boolean).map((slug) => ({ params: { slug } })),
+    fallback: "blocking",
   };
+}
+
+export async function getStaticProps({ params }) {
+  const album = await getGalleryAlbumBySlug(params.slug);
+
+  if (!album) {
+    return { notFound: true, revalidate: 60 };
+  }
+
+  return { props: { album }, revalidate: 60 };
 }

@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import PortableText from "@/components/PortableText";
@@ -26,6 +27,21 @@ export default function NewsArticle({ article, relatedArticles }) {
 
   return (
     <main className="bg-cream">
+      <Metatags
+        title={
+          article.metaTitle ||
+          (article.title ? `${article.title} | Crescent Village` : "News | Crescent Village")
+        }
+        description={
+          article.metaDescription ||
+          article.description ||
+          "Read the latest news, community stories, and updates from Crescent Village."
+        }
+        canonicalLink={`/news/${article.slug?.current ?? ""}`}
+        imageUrl={imageUrl}
+        type="article"
+        publishedTime={article.publishedAt}
+      />
       <section className="bg-sand rounded-b-md">
         <Navbar active="News" />
 

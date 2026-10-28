@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import ImpactGrid from "@/components/ImpactGrid";
 import AwardsSection from "@/components/AwardsSection";
 import TeamCard from "@/components/TeamCard";
@@ -43,6 +44,16 @@ export default function About({ page, news }) {
 
   return (
     <main>
+      <Metatags
+        title={page?.metaTitle || page?.title || "About Us | Crescent Village"}
+        description={
+          page?.metaDescription ||
+          page?.description ||
+          "Learn about Crescent Village's mission, impact, leadership, and the team building a supportive, connected community."
+        }
+        canonicalLink="/about"
+        imageUrl={heroImageUrl}
+      />
       <Navbar active="" />
       <section className="mx-auto max-w-[1400px] px-5 py-8 md:px-10 lg:py-20">
         <h1 className="font-about-hero-title text-center">

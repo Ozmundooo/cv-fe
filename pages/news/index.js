@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 
 import {
   Pagination,
@@ -37,6 +38,19 @@ export default function News({ page, news }) {
 
   return (
     <main>
+      <Metatags
+        title={
+          page?.metaTitle ||
+          page?.title ||
+          "News | Crescent Village"
+        }
+        description={
+          page?.metaDescription ||
+          page?.description ||
+          "Read the latest news, community stories, and updates from Crescent Village."
+        }
+        canonicalLink="/news"
+      />
       <Navbar active="News" />
 
       <div className="mx-auto my-8 max-w-[1400px] px-5 md:px-10 lg:my-20">

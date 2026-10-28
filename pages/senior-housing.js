@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import ImpactGrid from "@/components/ImpactGrid";
 import {
   Accordion,
@@ -33,7 +34,21 @@ export default function SeniorHousing({ page }) {
 
   return (
     <main className="relative">
-      <Navbar active="" />
+      <Metatags
+        title={
+          page?.metaTitle ||
+          page?.title ||
+          "Senior Housing | Crescent Village"
+        }
+        description={
+          page?.metaDescription ||
+          page?.description ||
+          "Affordable independent living for older adults at Crescent Village, including residence features, amenities, and FAQs."
+        }
+        canonicalLink="/senior-housing"
+        imageUrl={heroImageUrl}
+      />
+      <Navbar active="" page="senior" />
       <section className="grid lg:grid-cols-2 min-h-screen overflow-hidden max-w-[1400px] mx-auto px-5 md:px-10">
         <div className="bg-green flex flex-col  justify-end px-8 py-10">
           <h1 className="font-trust-hero-title max-w-[720px] ">

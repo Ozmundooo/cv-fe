@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import ImpactGrid from "@/components/ImpactGrid";
 import AwardsSection from "@/components/AwardsSection";
 import HomeFeatureCards from "@/components/HomeFeatureCards";
@@ -65,6 +66,16 @@ export default function Home({ home, programs, news, partners }) {
 
   return (
     <main className="relative">
+      <Metatags
+        title={home?.metaTitle || "Crescent Village | More Than Housing. A Place to Belong."}
+        description={
+          home?.metaDescription ||
+          home?.story ||
+          "Crescent Village is a non-profit community offering affordable housing, senior living, and programs that bring neighbors together."
+        }
+        canonicalLink="/"
+        imageUrl={heroImageUrl}
+      />
       <Navbar active="Home" className="absolute inset-x-0 top-0 z-10" />
       <section className="relative min-h-screen overflow-hidden">
         {heroVideoUrl ? (

@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import HomeFeatureCards from "@/components/HomeFeatureCards";
 import Link from "next/link";
 import {
@@ -39,7 +40,20 @@ export default function Trust({ page, programs }) {
 
   return (
     <main className="relative">
-      <Navbar active="" />
+      <Metatags
+        title={
+          page?.metaTitle ||
+          page?.title ||
+          "The Trust | Crescent Village"
+        }
+        description={
+          page?.metaDescription ||
+          page?.description ||
+          "Supporting communities through compassionate giving. Learn about the Crescent Village Trust and the programs it funds."
+        }
+        canonicalLink="/trust"
+      />
+      <Navbar active="" page="trust" />
       <section className="relative min-h-screen overflow-hidden max-w-[1400px] mx-auto">
         <video
           autoPlay

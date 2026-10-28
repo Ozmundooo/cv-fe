@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import {
   CalendarDays,
   Clock,
@@ -35,6 +36,20 @@ export default function Program({ program }) {
 
   return (
     <main className="bg-cream">
+      <Metatags
+        title={
+          program.metaTitle ||
+          (program.title ? `${program.title} | Crescent Village` : "Programs | Crescent Village")
+        }
+        description={
+          program.metaDescription ||
+          program.description ||
+          "Explore programs designed to support learning, wellness, recreation, and meaningful connections at Crescent Village."
+        }
+        canonicalLink={`/programs/${program.slug?.current ?? ""}`}
+        imageUrl={imageUrl}
+        type="article"
+      />
       <Navbar active="Programs" />
       <section className="mx-auto max-w-[890px] px-5 pt-24 text-center lg:pt-28">
         {program.type && (

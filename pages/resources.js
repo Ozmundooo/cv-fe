@@ -4,6 +4,7 @@ import { useState } from "react";
 import PortableText from "@/components/PortableText";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Metatags from "@/components/Metatags";
 import {
   Dialog,
   DialogContent,
@@ -119,6 +120,19 @@ export default function Resources({ page, resources }) {
 
   return (
     <main>
+      <Metatags
+        title={
+          page?.metaTitle ||
+          page?.title ||
+          "Resources | Crescent Village"
+        }
+        description={
+          page?.metaDescription ||
+          page?.description ||
+          "Find important resources, guides, and useful links for Crescent Village residents and families."
+        }
+        canonicalLink="/resources"
+      />
       <Navbar active="Resources" />
       <section className="mx-auto my-8 lg:my-20 max-w-[1400px] px-5 md:px-10">
         <h1 className="font-title max-w-[591px]">
