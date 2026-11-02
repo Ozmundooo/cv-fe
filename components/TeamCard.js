@@ -21,7 +21,7 @@ export default function TeamCard({ name, role, bio, imageUrl }) {
           src={imageUrl}
           alt={name ?? ""}
           loading="lazy"
-          className="w-full"
+          className="aspect-[3/4] w-full object-cover"
         />
       )}
       <h3 className="font-subtext text-[20px] font-bold leading-7 tracking-[-0.04em] text-[#1D1E22] lg:text-[32px] lg:leading-[58px]">
