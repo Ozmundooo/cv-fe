@@ -1,7 +1,7 @@
 import { Mail, Phone } from "lucide-react";
 
 const pageLinks = ["Home", "About", "Programs", "Partners", "News", "Gallery"];
-const helpLinks = ["Resources", "Forms"];
+const helpLinks = ["Resources", "Forms", "Contact"];
 
 const listClassName =
   "group/list space-y-1.5 w-fit md:space-y-2 [&>li>a]:transition-opacity [&>li:hover>a]:opacity-100 [&>li:hover~li>a]:opacity-45 [&>li:has(~li:hover)>a]:opacity-45";
