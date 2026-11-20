@@ -16,6 +16,14 @@ const fraunces = Fraunces({
 export default function App({ Component, pageProps }) {
   return (
     <main className={`${dmSans.variable} ${fraunces.variable}`}>
+      {/* Also expose the fonts on :root: dialogs and the lightbox render in
+          portals on <body>, outside <main>, and would fall back to Arial. */}
+      <style jsx global>{`
+        :root {
+          --font-dm-sans: ${dmSans.style.fontFamily};
+          --font-fraunces: ${fraunces.style.fontFamily};
+        }
+      `}</style>
       <Component {...pageProps} />
     </main>
   );

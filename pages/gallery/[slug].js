@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -10,20 +8,94 @@ import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import {
+  GALLERY_PREVIEW_COUNT,
   getGalleryAlbumBySlug,
   getGalleryAlbumSlugs,
-  urlFor,
+  sanityImage,
+  sanityImageProps,
+  sanityImageUrl,
 } from "@/lib/sanity";
+
+// `sizes` mirrors the grid: 2 columns on phones, 4 from md, capped by the
+// 1400px container. Quality 60 is indistinguishable at thumbnail size and
+// ~17% lighter.
+const GRID_IMAGE = {
+  widths: [360, 480, 640, 720],
+  aspectRatio: 4 / 3,
+  quality: 60,
+  sizes: "(min-width: 1400px) 324px, (min-width: 768px) calc(25vw - 26px), calc(50vw - 24px)",
+};
+const SLIDE_WIDTHS = [640, 1080, 1600, 2400];
+// Only the first photos are loaded eagerly at high priority; the rest
+// lazy-load as you scroll.
+const HIGH_PRIORITY_COUNT = 4;
+
+// Width/height of the image after any editor crop, so the lightbox can
+// lay slides out at the right aspect ratio before they finish loading.
+function croppedSize(image) {
+  if (!image.width || !image.height) return null;
+  const { left = 0, right = 0, top = 0, bottom = 0 } = image.crop ?? {};
+  return {
+    width: Math.round(image.width * (1 - left - right)),
+    height: Math.round(image.height * (1 - top - bottom)),
+  };
+}
+
+// The lightbox picks the smallest srcSet entry that fills the screen, so
+// phones get ~1080px images instead of 4000px+ camera originals.
+function toSlide(image, alt) {
+  const size = croppedSize(image);
+  const largest = SLIDE_WIDTHS[SLIDE_WIDTHS.length - 1];
+  const maxWidth = size ? Math.min(size.width, largest) : largest;
+  const widths = [...SLIDE_WIDTHS.filter((width) => width < maxWidth), maxWidth];
+  const heightFor = (width) =>
+    size ? Math.round((width * size.height) / size.width) : undefined;
+
+  return {
+    alt,
+    src: sanityImageUrl(image, { width: Math.min(1600, maxWidth) }),
+    width: size ? maxWidth : undefined,
+    height: heightFor(maxWidth),
+    thumbnail: sanityImageUrl(image, { width: 300 }),
+    srcSet: widths.map((width) => ({
+      src: sanityImageUrl(image, { width }),
+      width,
+      height: heightFor(width),
+    })),
+  };
+}
+
+// While a lightbox slide's full-size image loads (YARL keeps it at opacity 0
+// with the `yarl__slide_image_loading` class), show the small thumbnail
+// already fetched for the thumbnail strip instead of a black screen.
+function SlideWithPlaceholder({ slide, children }) {
+  return (
+    <div className="gallery-slide relative flex h-full w-full items-center justify-center">
+      {slide.thumbnail && (
+        <div
+          aria-hidden="true"
+          className="gallery-slide-placeholder pointer-events-none absolute inset-0 bg-contain bg-center bg-no-repeat"
+          style={{ backgroundImage: `url("${slide.thumbnail}")` }}
+        />
+      )}
+      {children}
+    </div>
+  );
+}
+
+const lightboxRender = { slideContainer: SlideWithPlaceholder };
 
 export default function GalleryAlbum({ album }) {
   const [selectedImage, setSelectedImage] = useState(-1);
   if (!album) return null;
 
-  const images = (album.images ?? []).filter((image) => image.imageUrl);
-  const lightboxSlides = images.map((image, index) => ({
-    src: image.imageUrl,
-    alt: `${album.title} photo ${index + 1}`,
-  }));
+  const images = (album.images ?? [])
+    .map((image, index) => ({ ...image, preview: album.previews?.[index] }))
+    .filter((image) => image.asset);
+  const photoAlt = (index) => `${album.title} photo ${index + 1}`;
+  const lightboxSlides = images.map((image, index) =>
+    toSlide(image, photoAlt(index)),
+  );
 
   return (
     <main className="bg-cream">
@@ -38,7 +110,7 @@ export default function GalleryAlbum({ album }) {
           "Browse this Crescent Village photo album."
         }
         canonicalLink={`/gallery/${album.slug?.current ?? ""}`}
-        imageUrl={album.coverUrl}
+        imageUrl={sanityImage(album.cover, 1200)}
       />
       <Navbar active="Gallery" />
       <section className="mx-auto max-w-[1400px] px-5 py-8 md:px-10 lg:py-20">
@@ -51,26 +123,42 @@ export default function GalleryAlbum({ album }) {
         )}
         {images.length > 0 ? (
           <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4 lg:mt-10">
-            {images.map((image, index) => (
-              <figure
-                key={image._key ?? index}
-                className="overflow-hidden rounded-md"
-              >
-                <button
-                  type="button"
-                  onClick={() => setSelectedImage(index)}
-                  className="block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
-                  aria-label={`Open photo ${index + 1}`}
+            {images.map((image, index) => {
+              const onFirstScreen = index < GALLERY_PREVIEW_COUNT;
+
+              return (
+                // Until the photo arrives, the tile shows a blurred preview
+                // (first screen) or the photo's dominant colour.
+                <figure
+                  key={image._key ?? index}
+                  className="relative overflow-hidden rounded-md bg-sand"
+                  style={image.color ? { backgroundColor: image.color } : undefined}
                 >
-                  <img
-                    src={urlFor(image).format("webp").url()}
-                    alt={`${album.title} photo ${index + 1}`}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
-                  />
-                </button>
-              </figure>
-            ))}
+                  {image.preview && (
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
+                      style={{ backgroundImage: `url("${image.preview}")` }}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImage(index)}
+                    className="relative block w-full cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
+                    aria-label={`Open photo ${index + 1} of ${images.length}`}
+                  >
+                    <img
+                      {...sanityImageProps(image, GRID_IMAGE)}
+                      alt={photoAlt(index)}
+                      loading={onFirstScreen ? "eager" : "lazy"}
+                      fetchPriority={index < HIGH_PRIORITY_COUNT ? "high" : undefined}
+                      decoding="async"
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                    />
+                  </button>
+                </figure>
+              );
+            })}
           </div>
         ) : (
           <p className="mt-10 font-subtext text-[15px] text-[#1D1E22]">
@@ -82,18 +170,20 @@ export default function GalleryAlbum({ album }) {
       <Lightbox
         open={selectedImage >= 0}
         close={() => setSelectedImage(-1)}
-        index={selectedImage}
+        index={Math.max(selectedImage, 0)}
         slides={lightboxSlides}
-        carousel={{ finite: false }}
+        render={lightboxRender}
+        carousel={{ finite: false, preload: 2 }}
         plugins={[Thumbnails]}
         thumbnails={{
           position: "bottom",
-          width: 146,
-          height: 128,
+          width: 120,
+          height: 90,
           border: 0,
           borderRadius: 6,
           padding: 0,
           gap: 8,
+          imageFit: "cover",
         }}
       />
     </main>

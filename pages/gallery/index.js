@@ -2,7 +2,14 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Metatags from "@/components/Metatags";
-import { getGalleryAlbums, getPage, sanityImage } from "@/lib/sanity";
+import { getGalleryAlbums, getPage, sanityImageProps } from "@/lib/sanity";
+
+const COVER_IMAGE = {
+  widths: [480, 640, 960],
+  aspectRatio: 4 / 3,
+  quality: 65,
+  sizes: "(min-width: 1400px) 440px, (min-width: 1024px) 31vw, (min-width: 640px) 50vw, 100vw",
+};
 
 export default function Gallery({ page, albums }) {
   return (
@@ -25,8 +32,10 @@ export default function Gallery({ page, albums }) {
         <h1 className="font-title">{page?.title || "Gallery"}</h1>
         {albums.length > 0 ? (
           <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3">
-            {albums.map((album) => {
-              const cover = sanityImage(album.cover);
+            {albums.map((album, index) => {
+              const cover = sanityImageProps(album.cover, COVER_IMAGE);
+              // The first row is on screen immediately, so don't lazy-load it.
+              const firstRow = index < 3;
               return (
                 <Link
                   key={album._id}
@@ -34,12 +43,24 @@ export default function Gallery({ page, albums }) {
                   className="group overflow-hidden rounded-md"
                 >
                   {cover ? (
-                    <img
-                      src={cover}
-                      alt={album.title}
-                      loading="lazy"
-                      className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                    />
+                    // Blurred preview shows instantly while the cover loads.
+                    <div className="relative overflow-hidden bg-sand">
+                      {album.coverPreview && (
+                        <div
+                          aria-hidden="true"
+                          className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
+                          style={{ backgroundImage: `url("${album.coverPreview}")` }}
+                        />
+                      )}
+                      <img
+                        {...cover}
+                        alt={album.title}
+                        loading={firstRow ? "eager" : "lazy"}
+                        fetchPriority={index === 0 ? "high" : undefined}
+                        decoding="async"
+                        className="relative aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      />
+                    </div>
                   ) : (
                     <div className="aspect-[4/3] w-full bg-sand" />
                   )}

@@ -108,6 +108,16 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Gallery lightbox: the low-res placeholder is visible only while the
+   full-size image is still loading (YARL marks it with this class). */
+.gallery-slide-placeholder {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.gallery-slide:has(.yarl__slide_image_loading) .gallery-slide-placeholder {
+  opacity: 1;
+}
+
 @keyframes partners-scroll {
   to {
     transform: translateX(calc(-50% - 5px));

@@ -1,90 +1,10 @@
-"use client";
-
 import { useState } from "react";
-import PortableText from "@/components/PortableText";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Metatags from "@/components/Metatags";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import DocumentCard from "@/components/DocumentCard";
+import { ChevronDown } from "lucide-react";
 import { getPage, getResources } from "@/lib/sanity";
-
-function formatBytes(bytes) {
-  if (!bytes) return "";
-  const mb = bytes / (1024 * 1024);
-  if (mb >= 1) return `${mb.toFixed(1)} MB`;
-  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-}
-
-function formatUpdatedAt(dateString) {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-  });
-}
-
-function ResourceDialog({ resource }) {
-  return (
-    <Dialog size="lg">
-      <DialogTrigger
-        aria-label={`Preview ${resource.title}`}
-        className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-md bg-[#1D1E22] text-cream transition-opacity hover:opacity-80"
-      >
-        <ChevronRight size={16} strokeWidth={1.5} />
-      </DialogTrigger>
-      <DialogContent
-        showCloseButton={false}
-        className={`grid h-[min(568px,calc(100vh-2rem))] max-w-[calc(100%-2rem)]  grid-cols-1 gap-0 overflow-y-scroll rounded-xl bg-[#1D1E22] p-0 text-[#1D1E22] sm:max-w-[908px] ${resource.fileUrl ? "md:grid-cols-[30%_70%]" : ""}`}
-      >
-        <div className="flex flex-col justify-between bg-cream p-6">
-          <div>
-            <DialogTitle className="font-subtext text-[24px] font-medium leading-[31px] tracking-[-0.04em] text-[#1D1E22]">
-              {resource.title}
-            </DialogTitle>
-            <DialogDescription className="mt-3 font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
-              {resource.description}
-              {resource.body && (
-                <div className="mt-3 text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
-                  <PortableText blocks={resource.body} />
-                </div>
-              )}
-            </DialogDescription>
-            {(resource.fileSize || resource.updatedAt) && (
-              <p className="mt-3 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
-                {[
-                  resource.fileSize
-                    ? `PDF - ${formatBytes(resource.fileSize)}`
-                    : null,
-                  resource.updatedAt
-                    ? `Updated ${formatUpdatedAt(resource.updatedAt)}`
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              </p>
-            )}
-          </div>
-        </div>
-        {resource.fileUrl && (
-          <div className="min-h-0 bg-[#1D1E22] p-4 md:p-6">
-            <iframe
-              title={`${resource.title} preview`}
-              src={`${resource.fileUrl}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
-              className="h-full w-full rounded-xl border-0 bg-white"
-            />
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 export default function Resources({ page, resources }) {
   const filterGroups = (page?.filterGroups ?? []).map((group) => ({
@@ -183,46 +103,7 @@ export default function Resources({ page, resources }) {
           )}
           <div id="resource-grid" className="grid gap-[10px] md:grid-cols-2">
             {currentResources.map((resource) => (
-              <article
-                key={resource._id}
-                className="relative min-h-[136px] rounded bg-white p-4"
-              >
-                {(resource.categories ?? []).length > 0 && (
-                  <div className="flex flex-wrap gap-2 md:absolute md:right-4 md:top-4">
-                    {resource.categories.map((category) => (
-                      <span
-                        key={category}
-                        className="rounded-md bg-terracotta px-2 py-1 font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-white"
-                      >
-                        {category}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <h2 className="font-subtext text-[24px] font-medium leading-[31px] tracking-[-0.04em] text-[#1D1E22]">
-                  {resource.title}
-                </h2>
-                {resource.description && (
-                  <p className="mt-2 max-w-[287px] font-subtext text-[12px] leading-4 tracking-[-0.04em] text-[#1D1E22]">
-                    {resource.description}
-                  </p>
-                )}
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="font-subtext text-[10px] leading-[13px] tracking-[-0.04em] text-[#1D1E22]">
-                    {[
-                      resource.fileSize
-                        ? `PDF - ${formatBytes(resource.fileSize)}`
-                        : null,
-                      resource.updatedAt
-                        ? `Updated ${formatUpdatedAt(resource.updatedAt)}`
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                  <ResourceDialog resource={resource} />
-                </div>
-              </article>
+              <DocumentCard key={resource._id} item={resource} type="resource" />
             ))}
             {!currentResources.length && (
               <p className="font-subtext text-[15px] text-[#1D1E22]">

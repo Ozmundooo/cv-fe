@@ -3,10 +3,20 @@ import Footer from "@/components/Footer";
 import Metatags from "@/components/Metatags";
 import ImpactGrid from "@/components/ImpactGrid";
 import AwardsSection from "@/components/AwardsSection";
-import TeamCard from "@/components/TeamCard";
+import TeamGrid from "@/components/TeamGrid";
 import Link from "next/link";
 import { Calendar } from "lucide-react";
-import { getPage, getNews, sanityImage } from "@/lib/sanity";
+import {
+  getPage,
+  getNews,
+  sanityImage,
+  sanityImageProps,
+} from "@/lib/sanity";
+
+const HERO_IMAGE = {
+  widths: [480, 800, 1200, 1600],
+  sizes: "(min-width: 840px) 800px, 100vw",
+};
 
 const impactPalette = [
   "bg-sand text-[#1D1E22]",
@@ -24,7 +34,7 @@ function formatDate(dateString) {
 }
 
 export default function About({ page, news }) {
-  const heroImageUrl = sanityImage(page?.heroImage);
+  const heroImage = sanityImageProps(page?.heroImage, HERO_IMAGE);
   const impactItems = (page?.impactItems ?? []).map((item, index) => ({
     ...item,
     className: impactPalette[index % impactPalette.length],
@@ -33,14 +43,8 @@ export default function About({ page, news }) {
     ...award,
     imageUrl: sanityImage(award.image),
   }));
-  const board = (page?.board ?? []).map((person) => ({
-    ...person,
-    imageUrl: sanityImage(person.image),
-  }));
-  const team = (page?.team ?? []).map((person) => ({
-    ...person,
-    imageUrl: sanityImage(person.image),
-  }));
+  const board = page?.board ?? [];
+  const team = page?.team ?? [];
 
   return (
     <main>
@@ -52,7 +56,7 @@ export default function About({ page, news }) {
           "Learn about Crescent Village's mission, impact, leadership, and the team building a supportive, connected community."
         }
         canonicalLink="/about"
-        imageUrl={heroImageUrl}
+        imageUrl={sanityImage(page?.heroImage, 1200)}
       />
       <Navbar active="" />
       <section className="mx-auto max-w-[1400px] px-5 py-8 md:px-10 lg:py-20">
@@ -60,11 +64,12 @@ export default function About({ page, news }) {
           {page?.title ||
             "It's about creating a community where people feel supported, connected, and empowered to thrive together."}
         </h1>
-        {heroImageUrl && (
+        {heroImage && (
           <img
-            src={heroImageUrl}
+            {...heroImage}
             alt="About Crescent Village"
-            loading="lazy"
+            fetchPriority="high"
+            decoding="async"
             className="mx-auto mt-8 max-w-[800px] w-full"
           />
         )}
@@ -119,11 +124,7 @@ export default function About({ page, news }) {
               {page.boardIntro}
             </p>
           )}
-          <div className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {board.map((person, index) => (
-              <TeamCard key={person._key ?? index} {...person} />
-            ))}
-          </div>
+          <TeamGrid people={board} groupLabel="Board of Directors" />
         </section>
       )}
       {team.length > 0 && (
@@ -140,11 +141,7 @@ export default function About({ page, news }) {
               {page.teamIntro}
             </p>
           )}
-          <div className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {team.map((person, index) => (
-              <TeamCard key={person._key ?? index} {...person} />
-            ))}
-          </div>
+          <TeamGrid people={team} groupLabel="Our Team" />
         </section>
       )}
       {news.length > 0 && (
