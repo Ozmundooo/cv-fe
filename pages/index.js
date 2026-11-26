@@ -5,9 +5,11 @@ import ImpactGrid from "@/components/ImpactGrid";
 import AwardsSection from "@/components/AwardsSection";
 import HomeFeatureCards from "@/components/HomeFeatureCards";
 import PartnersScroller from "@/components/PartnersScroller";
+import MuxBackgroundVideo from "@/components/MuxBackgroundVideo";
 import Link from "next/link";
 import { Calendar, ChevronRight } from "lucide-react";
 import { getPage, getPrograms, getNews, sanityImage } from "@/lib/sanity";
+import { muxThumbnailUrl } from "@/lib/mux";
 
 const impactPalette = [
   "bg-sand text-[#1D1E22]",
@@ -61,8 +63,11 @@ export default function Home({ home, programs, news, partners }) {
     imageUrl: sanityImage(partner.logo),
   }));
 
-  const heroVideoUrl = home?.heroMedia?.videoUrl;
+  const heroPlaybackId = home?.heroMedia?.videoPlaybackId;
   const heroImageUrl = sanityImage(home?.heroMedia?.image);
+  const shareImageUrl =
+    heroImageUrl ||
+    muxThumbnailUrl(heroPlaybackId, { width: 1200, format: "jpg" });
 
   return (
     <main className="relative">
@@ -74,20 +79,16 @@ export default function Home({ home, programs, news, partners }) {
           "Crescent Village is a non-profit community offering affordable housing, senior living, and programs that bring neighbors together."
         }
         canonicalLink="/"
-        imageUrl={heroImageUrl}
+        imageUrl={shareImageUrl}
       />
       <Navbar active="Home" className="absolute inset-x-0 top-0 z-10" />
       <section className="relative min-h-screen overflow-hidden">
-        {heroVideoUrl ? (
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
+        {heroPlaybackId ? (
+          <MuxBackgroundVideo
+            playbackId={heroPlaybackId}
+            title="Home hero"
             className="absolute inset-0 h-full w-full object-cover"
-          >
-            <source src={heroVideoUrl} type="video/mp4" />
-          </video>
+          />
         ) : heroImageUrl ? (
           <img
             src={heroImageUrl}
